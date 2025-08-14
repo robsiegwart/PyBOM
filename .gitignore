@@ -9,6 +9,7 @@ dev/
 run/
 Example/_*.xlsx
 env/
+.venv/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
