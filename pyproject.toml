@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyBOM"
+version = "0.2"
+description = "Bill of materials processing utilities"
+authors = [{ name = "Rob Siegwart", email = "rob@robsiegwart.com" }]
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["bom", "engineering", "manufacturing"]
+
+dependencies = [
+    "pandas",
+    "anytree",
+    "openpyxl"
+]
+
+[tool.setuptools]
+packages = ["pybom"]
