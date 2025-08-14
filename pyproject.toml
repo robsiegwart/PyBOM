@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pyBOM"
+name = "PyBOM"
 version = "0.2"
 description = "Bill of materials processing utilities"
 authors = [{ name = "Rob Siegwart", email = "rob@robsiegwart.com" }]

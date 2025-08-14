@@ -1,4 +1,4 @@
-# pyBOM
+# PyBOM
 
 A Python program for flattening a layered bill-of-material (BOM) based on Excel
 files. Part quantities are combined and a total quantity or
@@ -91,7 +91,7 @@ Setup your data with either the multi-file or single file approach, and then
 call the relevant method:
 
 ```python
-from pyBOM import BOM
+from pybom import BOM
 
 # Multi-file
 bom = BOM.from_folder(FOLDER)
@@ -178,21 +178,20 @@ This returns a `BOM` object with properties on it you can retrieve:
   ```
 
 
-
 ### Command Line
 
 Some quick functionality is extended to the command line via python module mode:
 
 
 ```
-> python -m pyBOM FOLDER ACTION
+> python -m pybom FOLDER ACTION
 ```
 
 Where `ACTION` is what to do and is just a property call on the resulting
 top-level BOM:
 
 ```
-> python -m pyBOM Example tree
+> python -m pybom Example tree
 SKA-100
 ├── Part SK1002-01
 ├── WH-01
