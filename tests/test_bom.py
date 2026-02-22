@@ -78,14 +78,14 @@ def test_qty(simple_df):
     assert bom.QTY("P5") == 2
 
 
-def test_qty_unknown_part_returns_none(simple_df):
+def test_qty_unknown_part_returns_zero(simple_df):
     bom = BOM.single_file(simple_df)
-    assert bom.QTY("NONEXISTENT") is None
+    assert bom.QTY("NONEXISTENT") == 0
 
 
 def test_aggregate_quantities(simple_df):
     bom = BOM.single_file(simple_df)
-    agg = {k.PN: v for k, v in bom.aggregate.items()}
+    agg = bom.aggregate
     assert agg["P1"] == 2
     assert agg["P5"] == 2
 
@@ -132,7 +132,7 @@ def test_nested_flat_includes_sub_parts(nested_df):
 
 def test_aggregate_multiplies_through_levels(nested_df):
     bom = BOM.single_file(nested_df)
-    agg = {k.PN: v for k, v in bom.aggregate.items()}
+    agg = bom.aggregate
     assert agg["P1"] == 1
     assert agg["P2"] == 6   # 3 per Sub × 2 Subs
     assert agg["P3"] == 2   # 1 per Sub × 2 Subs

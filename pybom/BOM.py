@@ -175,16 +175,15 @@ class BOM(Set, NodeMixin):
             items += assem.flat
         return items
 
-    def QTY(self, PN: str) -> int | None:
+    def QTY(self, PN: str) -> int:
         '''
         Return the quantity in the current BOM context for a given item
-        identified by its item number, ``PN``.
+        identified by its item number, ``PN``. Returns 0 if not found.
         '''
         try:
             return self.df.loc[self.df['PN']==PN, 'QTY'].iloc[0]
-        except IndexError as e:
-            print(e)
-            return None
+        except IndexError:
+            return 0
 
     @property
     def tree(self) -> str:
@@ -206,23 +205,27 @@ class BOM(Set, NodeMixin):
         '''
         return '\n'.join([line for line in DotExporter(self)])
 
-    @property
-    def aggregate(self) -> dict[Item, int] | Counter[str]:
-        '''
-        Return a :py:class:`dict` of ``Item: count`` pairs for the entire BOM
-        tree below the current BOM. Each item's local QTY is multiplied by the
-        QTY of its containing BOM assembly.
-
-        :rtype: dict
-        '''
-        parts = Counter()
+    def _count_parts(self) -> Counter[str]:
+        '''Recursive workhorse — returns {PN: total_quantity} as a Counter.'''
+        counts: Counter[str] = Counter()
         for p in self.parts:
-            parts.update({p.PN: self.QTY(p.PN)})
-
+            counts[p.PN] += self.QTY(p.PN)
         for bom in self.assemblies:
-            for k, v in bom.aggregate.items():
-                parts.update({k: v*self.QTY(bom.PN)})
-        return { self.parts_db.get(k):v for k,v in parts.items() } if self.parts_db else parts
+            qty = self.QTY(bom.PN)
+            for pn, count in bom._count_parts().items():
+                counts[pn] += count * qty
+        return counts
+
+    @property
+    def aggregate(self) -> dict[str, int]:
+        '''
+        Return a :py:class:`dict` of ``{PN: total_quantity}`` pairs for the
+        entire BOM tree below the current BOM. Each item's local QTY is
+        multiplied by the QTY of its containing BOM assembly.
+
+        :rtype: dict[str, int]
+        '''
+        return dict(self._count_parts())
 
     @property
     def summary(self) -> pd.DataFrame:
@@ -251,7 +254,7 @@ class BOM(Set, NodeMixin):
             return row['Purchase QTY']*row[cost_col]
 
 
-        counts = { k.PN:v for k,v in self.aggregate.items() }
+        counts = self.aggregate
         df = self.parts_db.df
         df['Total QTY'] = df.apply(lambda row: counts.get(row.PN), axis=1)
         df['Purchase QTY'] = df.apply(packages_to_buy, axis=1)
