@@ -305,17 +305,38 @@ class BOM(Set, NodeMixin):
         return cls.parse_parent_child(parts_db, assemblies)
     
     @classmethod
-    def single_file(cls, filename):
+    def single_file(cls, source):
         '''
-        Build a structured BOM from a single Excel file, where the tabs of the
-        document form the data, with the following convention:
+        Build a structured BOM from a single source, where sheets (or dict keys)
+        follow this convention:
 
-        - the first tab is the parts list 'database'
-        - all subsequent tabs are assemblies
+        - the first sheet/key is the parts list 'database'
+        - all subsequent sheets/keys are assemblies
 
-        For each assembly the tab/sheet name is the assembly part number (PN).
+        For each assembly the sheet name or dict key is the assembly part number (PN).
+
+        ``source`` may be any of the following:
+
+        - **str / path**: path to an ``.xlsx`` file on disk
+        - **pd.ExcelFile**: an already-opened pandas ExcelFile object
+        - **dict**: keys are sheet names (str), values are DataFrames; the first
+          key is treated as the parts database and the rest as assemblies
         '''
-        excelfile = pd.ExcelFile(filename)
+        # allow passing a dict/ExcelFile/path
+        if isinstance(source, dict):
+            # treat keys as sheet names; values are DataFrames
+            parts_db = PartsDB(source[next(iter(source))])
+            assemblies = {
+                name: BOM(df, PN=name)
+                for name, df in list(source.items())[1:]
+            }
+            return cls.parse_parent_child(parts_db, assemblies)
+
+        if isinstance(source, pd.ExcelFile):
+            excelfile = source
+        else:
+            excelfile = pd.ExcelFile(source)
+
         sheets = excelfile.sheet_names
         if not len(sheets) > 1:
             raise Exception('The Excel file in single file format must contain more than one tab.')
