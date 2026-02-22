@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2023 Rob Siegwart
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,17 +25,20 @@ Build and query multi-level and flattened BOMs based on elemental data stored in
 Microsoft Excel files.
 '''
 
+from __future__ import annotations
+
 import glob
 import os
 from collections import Counter
 from collections.abc import Set
 from math import ceil, nan
+from typing import Any, Iterator
 import pandas as pd
 from anytree import NodeMixin, SymlinkNodeMixin, RenderTree
 from anytree.exporter import DotExporter
 
 
-def fn_base(arg):
+def fn_base(arg: str | list[str]) -> str | list[str]:
     '''
     Return the part of a filename without the file extension. ::
 
@@ -51,35 +54,36 @@ def fn_base(arg):
 
 class BaseItem:
     '''
-    Base class for :class:`~BOM.Item` and :class:`~BOM.ItemLink`. 
+    Base class for :class:`~BOM.Item` and :class:`~BOM.ItemLink`.
     '''
     children = []
 
-    def __init__(self, PN, parent=None, item_type=None, **kwargs):
+    def __init__(self, PN: str, parent: BOM | None = None,
+                 item_type: str | None = None, **kwargs: Any) -> None:
         self.PN = PN
         self.parent = parent
         self.item_type = item_type
-    
+
         self.kwargs =kwargs
         for k,v in kwargs.items():
             try:
                 setattr(self,k,v)
             except AttributeError:
                 continue
-        
+
     @property
-    def series(self):
+    def series(self) -> pd.Series:
         cols = ['PN','item_type','parent'] + list(self.kwargs.keys())
         return pd.Series({k:getattr(self,k,None) for k in cols})
-    
+
     @property
-    def name(self):
+    def name(self) -> str:
         return self.PN
-    
-    def __repr__(self):
+
+    def __repr__(self) -> str:
         name = self.item_type.capitalize() if self.item_type else 'Item'
         return f'{name} {self.PN}'
-    
+
     __str__ = __repr__
 
 
@@ -103,7 +107,7 @@ class ItemLink(BaseItem, SymlinkNodeMixin):
 
     :param NodeMixin target:    The target node object (anytree)
     '''
-    def __init__(self, target):
+    def __init__(self, target: Item | BOM) -> None:
         self.target = target
 
 
@@ -121,11 +125,15 @@ class BOM(Set, NodeMixin):
     :param list items:          list of :class:`~BOM.BOM` or :class:`~BOM.Item`
                                 objects included in this BOM.
     :param str item_type:       type description of the object, one of ``part``,
-                                ``assembly``, ``document`` 
+                                ``assembly``, ``document``
     :param BOM parts_db:        BOM object representing the master parts list
     '''
-    def __init__(self, df=None, PN=None, parent=None, items=None,
-                 item_type=None, parts_db=None):
+    def __init__(self, df: pd.DataFrame | None = None,
+                 PN: str | None = None,
+                 parent: BOM | None = None,
+                 items: list[Item | BOM] | None = None,
+                 item_type: str | None = None,
+                 parts_db: PartsDB | None = None) -> None:
         self.df = df
         self.PN = PN
         self.parent = parent
@@ -136,28 +144,28 @@ class BOM(Set, NodeMixin):
         if self.parts_db and self.df:
             self.init_parts()
 
-    def __contains__(self, item):
+    def __contains__(self, item: object) -> bool:
         return item in self.children
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Item | BOM]:
         for item in self.children:
             yield item
-    
-    def __len__(self):
+
+    def __len__(self) -> int:
         return len(self.children)
-    
+
     @property
-    def parts(self):
+    def parts(self) -> list[Item]:
         '''Return a list of the parts that are direct children to this BOM'''
         return [ item for item in self.children if item.item_type == 'part' ]
-    
+
     @property
-    def assemblies(self):
+    def assemblies(self) -> list[BOM]:
         '''Return a list of assemblies that are direct children to this BOM'''
         return [ item for item in self.children if item.item_type == 'assembly' ]
-    
+
     @property
-    def flat(self):
+    def flat(self) -> list[Item]:
         '''
         Return a flattened version of the BOM with each sub-assembly contained
         in it expanded.
@@ -167,7 +175,7 @@ class BOM(Set, NodeMixin):
             items += assem.flat
         return items
 
-    def QTY(self, PN):
+    def QTY(self, PN: str) -> int | None:
         '''
         Return the quantity in the current BOM context for a given item
         identified by its item number, ``PN``.
@@ -179,7 +187,7 @@ class BOM(Set, NodeMixin):
             return None
 
     @property
-    def tree(self):
+    def tree(self) -> str:
         '''
         Return a string representation of the complete BOM hierarchy from the
         current BOM down as a tree.
@@ -187,9 +195,9 @@ class BOM(Set, NodeMixin):
         :rtype: str
         '''
         return str(RenderTree(self))
-    
+
     @property
-    def dot(self):
+    def dot(self) -> str:
         '''
         Return the BOM tree structure from :py:attr:`BOM.BOM.tree` in DOT graph
         format (Graphiz)
@@ -199,7 +207,7 @@ class BOM(Set, NodeMixin):
         return '\n'.join([line for line in DotExporter(self)])
 
     @property
-    def aggregate(self):
+    def aggregate(self) -> dict[Item, int] | Counter[str]:
         '''
         Return a :py:class:`dict` of ``Item: count`` pairs for the entire BOM
         tree below the current BOM. Each item's local QTY is multiplied by the
@@ -210,14 +218,14 @@ class BOM(Set, NodeMixin):
         parts = Counter()
         for p in self.parts:
             parts.update({p.PN: self.QTY(p.PN)})
-        
+
         for bom in self.assemblies:
             for k, v in bom.aggregate.items():
                 parts.update({k: v*self.QTY(bom.PN)})
         return { self.parts_db.get(k):v for k,v in parts.items() } if self.parts_db else parts
-    
+
     @property
-    def summary(self):
+    def summary(self) -> pd.DataFrame:
         '''
         Return a summary table with aggregated quantities alongside part table
         information.
@@ -232,7 +240,7 @@ class BOM(Set, NodeMixin):
             except ValueError:
                 packages_to_buy_ = 0
             return packages_to_buy_
-        
+
         def subtotal(row):
             if 'Pkg Price' in row and not pd.isnull(row['Pkg Price']):
                 cost_col = 'Pkg Price'
@@ -249,13 +257,14 @@ class BOM(Set, NodeMixin):
         df['Purchase QTY'] = df.apply(packages_to_buy, axis=1)
         df['Subtotal'] = df.apply(subtotal, axis=1)
         return df
-        
+
     @property
-    def name(self):
+    def name(self) -> str | None:
         return self.PN
 
     @classmethod
-    def from_file(cls, filename, PN=None):
+    def from_file(cls, filename: str | os.PathLike[str],
+                  PN: str | None = None) -> BOM:
         '''
         Create an instance of :py:class:`BOM.BOM` based on an existing Excel
         file.
@@ -267,9 +276,10 @@ class BOM(Set, NodeMixin):
         '''
         data = pd.read_excel(filename)
         return cls(df=data, PN=PN or fn_base(os.path.basename(filename)))
-    
+
     @classmethod
-    def from_folder(cls, directory, parts_file_name='Parts list'):
+    def from_folder(cls, directory: str | os.PathLike[str],
+                    parts_file_name: str = 'Parts list') -> BOM:
         '''
         Generate a hierarchial BOM from a folder containing Excel (.xlsx) files.
         The Excel file with the same name as parameter ``parts_file_name`` is
@@ -292,20 +302,22 @@ class BOM(Set, NodeMixin):
         files = [os.path.split(fn)[-1] for fn in glob.glob(os.path.join(directory, '*.xlsx')) if
                  not os.path.basename(fn).startswith('_') and not os.path.basename(fn).startswith('~')]
         """All valid Excel files in the directory"""
-        
+
         assembly_files = [ x for x in files if fn_base(x).lower() != parts_file_name.lower() ]
         """Those files which are assumed to be assemblies"""
 
         assemblies = { fn_base(file):BOM.from_file(os.path.join(directory, file)) for file in assembly_files }
         """Instances of ``BOM`` for each assembly keyed with its PN"""
-        
+
         parts_db = PartsDB.from_file(os.path.join(directory, f'{parts_file_name}.xlsx'))
         """Master parts database, ``PartsDB`` instance"""
 
         return cls.parse_parent_child(parts_db, assemblies)
-    
+
     @classmethod
-    def single_file(cls, source):
+    def single_file(cls, source: str | os.PathLike[str]
+                                | pd.ExcelFile
+                                | dict[str, pd.DataFrame]) -> BOM:
         '''
         Build a structured BOM from a single source, where sheets (or dict keys)
         follow this convention:
@@ -343,9 +355,10 @@ class BOM(Set, NodeMixin):
         parts_db = PartsDB(excelfile.parse(sheets[0]))
         assemblies = { sheet_:BOM(excelfile.parse(sheet_), PN=sheet_) for sheet_ in sheets[1:] }
         return cls.parse_parent_child(parts_db, assemblies)
-    
+
     @staticmethod
-    def parse_parent_child(parts_db, assemblies):
+    def parse_parent_child(parts_db: PartsDB,
+                           assemblies: dict[str, BOM]) -> BOM:
         '''
         Assign parent/child relationships between parts and assemblies.
 
@@ -353,9 +366,9 @@ class BOM(Set, NodeMixin):
         :param dict assemblies:         A dictionary of assemblies in the form
                                         {PN: :py:class:`BOM.BOM`}
         '''
-        for name,bom in assemblies.items():
+        for _,bom in assemblies.items():
             children = []
-            for i,row in bom.df.iterrows():
+            for _,row in bom.df.iterrows():
                 if row.PN in assemblies:                    # it is an assembly
                     sub_bom = assemblies.get(row.PN)
                     if sub_bom.parent:
@@ -387,47 +400,47 @@ class BOM(Set, NodeMixin):
         root = root[0]
         root.parts_db = parts_db
         return root
-    
-    def __repr__(self):
+
+    def __repr__(self) -> str:
         return self.PN or f'BOM with {len(self.df)} items'
-    
+
     __str__ = __repr__
 
 
 class PartsDB:
     '''
     A container for the master parts list.
-    
+
     :param DataFrame df:    Input data as a DataFrame
     '''
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame) -> None:
         self.df = df
-        self.parts = { row.PN:Item(**{**row.to_dict(), **{'item_type': 'part'}}) for i,row in df.iterrows() }
-    
+        self.parts = { row.PN:Item(**{**row.to_dict(), **{'item_type': 'part'}}) for _,row in df.iterrows() }
+
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename: str | os.PathLike[str]) -> PartsDB:
         '''Instantiate a new instance from a file'''
         data = pd.read_excel(filename)
         return cls(data)
-    
-    def get(self, PN):
+
+    def get(self, PN: str) -> Item | None:
         '''Retrieve an ``Item`` object from the database'''
         return self.parts.get(PN, None)
-    
+
     @property
-    def fields(self):
+    def fields(self) -> list[str]:
         '''List the database fields (columns)'''
         return list(self.df.columns)
-    
-    def prop(self, PN, prop):
+
+    def prop(self, PN: str, prop: str) -> Any:
         '''Return a property for specific part'''
         try:
             return self.df.loc[self.df['PN']==PN, prop].iloc[0]
         except IndexError as e:
             print(e)
             return None
-    
-    def __repr__(self):
+
+    def __repr__(self) -> str:
         return f'Parts List with {len(self.parts)} parts'
 
     __str__ = __repr__
