@@ -15,7 +15,8 @@ keywords = ["bom", "engineering", "manufacturing"]
 dependencies = [
     "pandas",
     "anytree",
-    "openpyxl"
+    "openpyxl",
+    "pytest"
 ]
 
 [tool.setuptools]
