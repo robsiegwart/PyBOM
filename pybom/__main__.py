@@ -8,11 +8,14 @@ Run the program from the command line via python module mode.
 
 '''
 
+import sys
 import argparse
 from .BOM import BOM
 
 
 def main():
+    sys.stdout.reconfigure(encoding='utf-8')
+
     parser = argparse.ArgumentParser(
         prog='pybom',
         description='Parse a folder of Excel Bill-of-Materials.'
