@@ -5,7 +5,7 @@
 development/
 temp/
 *.code-workspace
-dev/
+scratch/
 run/
 Example/_*.xlsx
 env/
