@@ -1,5 +1,7 @@
 # PyBOM
 
+![Tests](https://github.com/robsiegwart/pyBOM/actions/workflows/test.yml/badge.svg)
+
 A Python program for flattening a layered bill-of-material (BOM) based on Excel
 files. Part quantities are combined and a total quantity or
 minimum-required-package-to-buy amount is calculated, in addition to extended
