@@ -18,9 +18,17 @@ parser = argparse.ArgumentParser(
     description='Parse a folder of Excel Bill-of-Materials.'
 )
 
-parser.add_argument(
-    'folder',
-    help='The name of the folder containing Excel BOM files.'
+
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument(
+    '-f', '--file',
+    help='The name of a single Excel BOM file.',
+    metavar='FILE'
+)
+group.add_argument(
+    '-d', '--dir',
+    help='The name of the folder containing Excel BOM files.',
+    metavar='FOLDER'
 )
 
 parser.add_argument(
@@ -31,5 +39,11 @@ parser.add_argument(
 
 ns = parser.parse_args()
 
-bom = BOM.from_folder(ns.folder)
-print(getattr(bom,ns.action))
+if ns.file:
+    bom = BOM.single_file(ns.file)
+elif ns.dir:
+    bom = BOM.from_folder(ns.dir)
+else:
+    raise ValueError('Either --file or --dir must be specified.')
+
+print(getattr(bom, ns.action))
