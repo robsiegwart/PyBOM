@@ -12,17 +12,17 @@ In the context of this program this is represented by an Excel file with a
 special name (defaults to ``Parts list.xlsx``). For example, parts for a
 skateboard might have:
 
-=========== ============= ==================== ==================== =========== ======== ============== =====
-PN          Name          Description          Supplier             Supplier PN Pkg QTY  Pkg Price      Item
-=========== ============= ==================== ==================== =========== ======== ============== =====
-SK1001-01   Bearing       Wheel bearing        XYZ Bearing Co.      74295-942   1        2.99           part
-SK1002-01   Board         Standard type        Skatr Dude Inc.      BRX-02      1        15.99          part
-SK1003-01   Truck half    Truck fixed          Skatr Dude Inc.      TR1-A       1        9.87           part
-SK1004-01   Truck half    Truck movable        Skatr Dude Inc.      TR1-B       1        12.25          part
-SK1005-01   Truck screw   1/4-20 SHCS          Bolts R Us           92220A      50       12.86          part
-SK1006-01   Wheel         Hard clear urethane  Skatr Dude Inc.      WHL-PRX     4        9.87           part
-SK1007-01   Nut           1/4-20 Hex nut       Bolts R Us           95479A      50       4.88           part
-=========== ============= ==================== ==================== =========== ======== ============== =====
+=========== ============= ============================== ======================= ============== ======== ============== =====
+PN          Name          Description                    Supplier                Supplier PN    Pkg QTY  Pkg Price      Item
+=========== ============= ============================== ======================= ============== ======== ============== =====
+SK1001-01   Deck          Pavement Pro 9" Maple Deck     Grindstone Supply Co.   BRX-02         1        67.95          part
+SK1002-01   Truck         HollowKing Standard Trucks     Grindstone Supply Co.   TR1-A          1        28.95          part
+SK1003-01   Bearing       ABEC-7 Steel Bearings          BoltRun Hardware        74295-942      1        9.95           part
+SK1004-01   Wheel         SlickCore 54mm Cruiser Wheels  Grindstone Supply Co.   WHL-PRX        4        44.95          part
+SK1005-01   Screw         10-32, 1", Phillips            BoltRun Hardware        92220A         25       12.49          part
+SK1006-01   Nut           10-32                          BoltRun Hardware        95479A         25       9.89           part
+SK1007-01   Grip Tape     SuperStick 9"                  BoltRun Hardware        GTSS99         1        8.95           part
+=========== ============= ============================== ======================= ============== ======== ============== =====
 
 For each assembly, all that is required is the part identification number and
 its quantity which correspond to the following fields:
@@ -30,13 +30,13 @@ its quantity which correspond to the following fields:
 - PN
 - QTY
 
-Example:
+Example wheel assembly (1 wheel + 2 bearings):
 
 =========== =====
 PN          QTY
 =========== =====
-SK1003-01   1
 SK1004-01   1
+SK1003-01   2
 =========== =====
 
 Certain fields are used in calculating totals, such as in :py:attr:`BOM.BOM.summary`,

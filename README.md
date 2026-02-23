@@ -42,15 +42,15 @@ have to be explicitly identified.
 *Parts list.xlsx* serves as the single point of reference for part information.
 For example, it may have the following:
 
-| PN        | Name        | Description         | Cost    | Item  | Supplier         | Supplier PN   | Pkg QTY   | Pkg Price  |
-| --------- | ----------- | ------------------- | ------- | ----- | ---------------- | ------------- | --------- | ---------- |
-| SK1001-01 | Bearing     | Wheel bearing       |         | part  | XYZ Bearing Co.  | 74295-942     | 1         | 2.99       |
-| SK1002-01 | Board       | Standard type       | 13.42   | part  |                  |               |           |            |
-| SK1003-01 | Truck half  | Truck fixed         |         | part  | Skatr Dude Inc.  | TR1-A         | 1         | 9.87       |
-| SK1004-01 | Truck half  | Truck movable       |         | part  | Skatr Dude Inc.  | TR1-B         | 1         | 12.25      |
-| SK1005-01 | Truck screw | 1/4-20 SHCS         |         | part  | Bolts R Us       | 92220A        | 50        | 12.86      |
-| SK1006-01 | Wheel       | Hard clear urethane |         | part  | Skatr Dude Inc.  | WHL-PRX       | 4         | 9.87       |
-| SK1007-01 | Nut         | 1/4-20 Hex nut      |         | part  | Bolts R Us       | 95479A        | 50        | 4.88       |
+| PN        | Name        | Description                    | Supplier               | Supplier PN   | Pkg QTY   | Pkg Price  | Item  |
+| --------- | ----------- | ------------------------------ | ---------------------- | ------------- | --------- | ---------- | ----- |
+| SK1001-01 | Deck        | Pavement Pro 9" Maple Deck     | Grindstone Supply Co.  | BRX-02        | 1         | 67.95      | part  |
+| SK1002-01 | Truck       | HollowKing Standard Trucks     | Grindstone Supply Co.  | TR1-A         | 1         | 28.95      | part  |
+| SK1003-01 | Bearing     | ABEC-7 Steel Bearings          | BoltRun Hardware       | 74295-942     | 1         | 9.95       | part  |
+| SK1004-01 | Wheel       | SlickCore 54mm Cruiser Wheels  | Grindstone Supply Co.  | WHL-PRX       | 4         | 44.95      | part  |
+| SK1005-01 | Screw       | 10-32, 1", Phillips            | BoltRun Hardware       | 92220A        | 25        | 12.49      | part  |
+| SK1006-01 | Nut         | 10-32                          | BoltRun Hardware       | 95479A        | 25        | 9.89       | part  |
+| SK1007-01 | Grip Tape   | SuperStick 9"                  | BoltRun Hardware       | GTSS99        | 1         | 8.95       | part  |
 
 For each assembly, all that is required is the part identification number and
 quantity which correspond to the following fields:
@@ -58,12 +58,12 @@ quantity which correspond to the following fields:
 - PN
 - QTY
 
-Example:
+Example wheel assembly (1 wheel + 2 bearings):
 
 | PN          | QTY   |
 | ----------- | ----- |
-| SK1003-01   | 1     |
 | SK1004-01   | 1     |
+| SK1003-01   | 2     |
 
 Certain fields are used in calculating totals, such as in `BOM.BOM.summary`,
 which are:
@@ -89,8 +89,9 @@ the sheet name as the assembly part number (PN).
 
 After downloading, install with pip via `pip install .`
 
-Setup your data with either the multi-file or single file approach, and then
-call the relevant method:
+Setup your data with either the multi-file or single file approach.
+
+### API Usage
 
 ```python
 from pybom import BOM
@@ -110,7 +111,7 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   ```
   >>> print(bom.parts)
-  [Part SK1002-01, Part SK1005-01, Part SK1007-01]
+  [Part SK1001-01, Part SK1005-01, Part SK1006-01, Part SK1007-01] 
   ```
 
 `BOM.assemblies`
@@ -127,8 +128,7 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   ```
   >>> print(bom.aggregate)
-  {Part SK1002-01: 1, Part SK1005-01: 8, Part SK1007-01: 14, Part SK1006-01: 8,
-  Part SK1001-01: 4, Part SK1003-01: 2, Part SK1004-01: 2}
+  {'SK1001-01': np.int64(1), 'SK1005-01': np.int64(8), 'SK1006-01': np.int64(8), 'SK1007-01': np.int64(1), 'SK1004-01': np.int64(8), 'SK1003-01': np.int64(16), 'SK1002-01': np.int64(2)}
   ```
 
 `BOM.summary`
@@ -138,14 +138,14 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   ```
   >>> print(bom.summary)
-          PN         Name          Description  ...  Total QTY Purchase QTY Subtotal
-0  SK1001-01      Bearing        Wheel bearing  ...          4            4    11.96
-1  SK1002-01        Board        Standard type  ...          1            1    13.42
-2  SK1003-01   Truck half          Truck fixed  ...          2            2    19.74
-3  SK1004-01   Truck half        Truck movable  ...          2            2    24.50
-4  SK1005-01  Truck screw          1/4-20 SHCS  ...          8            1    12.86
-5  SK1006-01        Wheel  Hard clear urethane  ...          8            2    19.74
-6  SK1007-01          Nut       1/4-20 Hex nut  ...         14            1     4.88
+          PN       Name                    Description  ... Total QTY Purchase QTY  Subtotal
+0  SK1001-01       Deck     Pavement Pro 9" Maple Deck  ...         1            1     67.95
+1  SK1002-01      Truck     HollowKing Standard Trucks  ...         2            2     57.90
+2  SK1003-01    Bearing          ABEC-7 Steel Bearings  ...        16           16     55.84
+3  SK1004-01      Wheel  SlickCore 54mm Cruiser Wheels  ...         8            1     44.95
+4  SK1005-01      Screw            10-32, 1”, Phillips  ...         8            1     12.49
+5  SK1006-01        Nut                          10-32  ...         8            1      9.89
+6  SK1007-01  Grip tape                  SuperStick 9”  ...         1            1      8.95
   ```
 
 `BOM.tree`
@@ -154,16 +154,15 @@ This returns a `BOM` object with properties on it you can retrieve:
   ```
   >>> print(bom.tree)
   SKA-100
-  ├── Part SK1002-01    
+  ├── Part SK1001-01
   ├── WH-01
-  │   ├── Part SK1006-01
-  │   ├── Part SK1001-01
-  │   └── Part SK1007-01
-  ├── TR-01
-  │   ├── Part SK1003-01
   │   ├── Part SK1004-01
-  │   └── Part SK1007-01
+  │   └── Part SK1003-01
+  ├── TR-01
+  │   ├── Part SK1002-01
+  │   └── Assembly WH-01
   ├── Part SK1005-01
+  ├── Part SK1006-01
   └── Part SK1007-01
   ```
 
@@ -174,37 +173,35 @@ This returns a `BOM` object with properties on it you can retrieve:
   WH-01
   >>> print(sa.tree)
   WH-01
-  ├── Part SK1006-01
-  ├── Part SK1001-01
-  └── Part SK1007-01
+  ├── Part SK1004-01
+  ├── Part SK1003-01
   ```
 
+### Command Line Usage
 
-### Command Line
+Functionality is extended to the command line via the command `pybom`, where the
+flag `-f` or `-d` is used to specify the name of a file for single-file mode
+or a folder for multi-file mode.
 
-Some quick functionality is extended to the command line via python module mode:
-
-
-```
-> python -m pybom FOLDER ACTION
-```
-
-Where `ACTION` is what to do and is just a property call on the resulting
-top-level BOM:
+`action` is what to do with the imported data, which just maps to a property
+on the top-level `BOM` object.
 
 ```
-> python -m pybom Example tree
+> pybom [-h] (-f FILE | -d FOLDER) action
+```
+
+```
+> pybom -d Example tree
 SKA-100
-├── Part SK1002-01
+├── Part SK1001-01
 ├── WH-01
-│   ├── Part SK1006-01
-│   ├── Part SK1001-01
-│   └── Part SK1007-01
-├── TR-01
-│   ├── Part SK1003-01
 │   ├── Part SK1004-01
-│   └── Part SK1007-01
+│   └── Part SK1003-01
+├── TR-01
+│   ├── Part SK1002-01
+│   └── Assembly WH-01
 ├── Part SK1005-01
+├── Part SK1006-01
 └── Part SK1007-01
 ```
 
