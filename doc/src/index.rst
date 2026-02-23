@@ -1,5 +1,5 @@
-Welcome to pyBOM.py's documentation
-===================================
+Welcome to pyBOM's documentation
+================================
 
 Background
 ----------
@@ -57,8 +57,11 @@ assemblies as individual Excel files (the file name becomes the assembly item
 number by default). Then, call class method :py:meth:`BOM.BOM.from_folder()`
 with the path to your folder to instantiate and build BOM objects.
 
-Then, call methods or properties on the root BOM returned from
-:py:meth:`BOM.BOM.from_folder()` to obtain derived information:
+Alternatively, use :py:meth:`BOM.BOM.single_file()` to load all parts and
+assemblies from a single multi-sheet Excel file, or :py:meth:`BOM.BOM.from_file()`
+to create a bare BOM from a single Excel file without a parts database.
+
+Then, call methods or properties on the root BOM to obtain derived information:
 
 :py:attr:`BOM.BOM.parts`
    Get a list of all direct-child parts
@@ -66,8 +69,12 @@ Then, call methods or properties on the root BOM returned from
 :py:attr:`BOM.BOM.assemblies`
    Get a list of all direct-child assemblies
 
-:py:attr:`BOM.BOM.quantities`
-   Get the quantity of each direct child in the BOM
+:py:attr:`BOM.BOM.flat`
+   Get a flattened list of all parts, recursively expanding sub-assemblies
+
+:py:meth:`BOM.BOM.QTY`
+   Get the quantity of a specific item by its part number in the current BOM
+   context
 
 :py:attr:`BOM.BOM.aggregate`
    Get the aggregated quantity of each part/assembly from the current BOM level
@@ -81,6 +88,37 @@ Then, call methods or properties on the root BOM returned from
 :py:attr:`BOM.BOM.tree`
    Return a string representation of the BOM tree hierarchy
 
+:py:attr:`BOM.BOM.dot`
+   Return the BOM tree in DOT graph format (Graphviz)
+
+
+Command-Line Interface
+----------------------
+
+The package installs a ``pybom`` command (also accessible as ``python -m pybom``)
+for quick access to BOM properties from the terminal.
+
+Usage::
+
+   pybom -f FILE action
+   pybom -d FOLDER action
+
+Arguments:
+
+``-f FILE``
+   Path to a single Excel BOM file.
+
+``-d FOLDER``
+   Path to a folder of BOM Excel files (uses :py:meth:`BOM.BOM.from_folder()`).
+
+``action``
+   Any property or method name on the :py:class:`BOM.BOM` object, e.g.
+   ``tree``, ``aggregate``, ``summary``.
+
+Example::
+
+   pybom -d ./skateboard tree
+
 
 Classes
 -------
@@ -92,4 +130,6 @@ Classes
 .. autoclass:: BOM.ItemLink
    :members:
 .. autoclass:: BOM.BOM
+   :members:
+.. autoclass:: BOM.PartsDB
    :members:
