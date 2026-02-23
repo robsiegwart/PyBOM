@@ -128,7 +128,7 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   ```
   >>> print(bom.aggregate)
-  {'SK1001-01': np.int64(1), 'SK1005-01': np.int64(8), 'SK1006-01': np.int64(8), 'SK1007-01': np.int64(1), 'SK1004-01': np.int64(8), 'SK1003-01': np.int64(16), 'SK1002-01': np.int64(2)}
+  {'SK1001-01': 1, 'SK1005-01': 8, 'SK1006-01': 8, 'SK1007-01': 1, 'SK1004-01': 8, 'SK1003-01': 16, 'SK1002-01': 2}
   ```
 
 `BOM.summary`

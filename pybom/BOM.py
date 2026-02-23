@@ -181,7 +181,7 @@ class BOM(Set, NodeMixin):
         identified by its item number, ``PN``. Returns 0 if not found.
         '''
         try:
-            return self.df.loc[self.df['PN']==PN, 'QTY'].iloc[0]
+            return int(self.df.loc[self.df['PN']==PN, 'QTY'].iloc[0])
         except IndexError:
             return 0
 
