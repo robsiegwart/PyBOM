@@ -36,6 +36,50 @@ class BomRepl(cmd.Cmd):
         '''Display the BOM hierarchy as an ASCII tree.'''
         print(self.bom.tree)
 
+    def do_parts(self, arg: str) -> None:
+        '''List all unique parts in the BOM with PN, Name, and Description.'''
+        counts = self.bom.aggregate
+        if not counts:
+            print('No parts found.')
+            return
+        df = self.bom.parts_db.df.copy()
+        df = df[df['PN'].isin(counts)]
+        cols = ['PN'] + [c for c in ('Name', 'Description') if c in df.columns]
+        print(df[cols].to_string(index=False))
+
+    def do_assemblies(self, arg: str) -> None:
+        '''List all assemblies in the BOM hierarchy with PN and name.'''
+        all_assemblies = self._collect_assemblies(self.bom)
+        rows = []
+        for asm in all_assemblies:
+            pn = asm.PN or ''
+            item = self.bom.parts_db.get(pn) if self.bom.parts_db else None
+            name = getattr(item, 'Name', '') if item else ''
+            rows.append((pn, name or ''))
+
+        if not rows:
+            print('No assemblies found.')
+            return
+
+        pn_width = max(len(r[0]) for r in rows) + 2
+        has_names = any(r[1] for r in rows)
+        if has_names:
+            for pn, name in rows:
+                print(f'{pn:{pn_width}}{name}')
+        else:
+            for pn, _ in rows:
+                print(pn)
+
+    def do_summary(self, arg: str) -> None:
+        '''Display the aggregated BOM summary table.'''
+        try:
+            df = self.bom.summary
+        except Exception as e:
+            print(f'Error: {e}')
+            return
+        df = df.dropna(axis=1, how='all')
+        print(df.to_string(index=False))
+
     def do_quit(self, arg: str) -> bool:
         '''Exit the REPL.'''
         return True
@@ -44,6 +88,19 @@ class BomRepl(cmd.Cmd):
         '''Exit on Ctrl-D (Ctrl-Z on Windows).'''
         print()
         return True
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _collect_assemblies(self, bom: BOM, result: list | None = None) -> list:
+        '''Recursively collect all BOM nodes in depth-first order.'''
+        if result is None:
+            result = []
+        result.append(bom)
+        for sub in bom.assemblies:
+            self._collect_assemblies(sub, result)
+        return result
 
     # ------------------------------------------------------------------
     # Behavioural overrides

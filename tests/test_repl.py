@@ -50,3 +50,31 @@ def test_run_repl_exits_on_missing_files(tmp_path):
     with pytest.raises(SystemExit) as exc:
         run_repl(directory=str(tmp_path))
     assert exc.value.code == 1
+
+
+def test_parts_shows_bom_parts(repl, capsys):
+    repl.onecmd('parts')
+    captured = capsys.readouterr()
+    # P1, P2, P5, P7 are in the assembly; P3, P4, P6 are not
+    assert 'P1' in captured.out
+    assert 'P2' in captured.out
+    assert 'P3' not in captured.out
+
+
+def test_parts_shows_name_column(repl, capsys):
+    repl.onecmd('parts')
+    captured = capsys.readouterr()
+    assert 'Bearing' in captured.out  # P1's Name
+
+
+def test_assemblies_shows_root(repl, capsys):
+    repl.onecmd('assemblies')
+    captured = capsys.readouterr()
+    assert 'Assembly' in captured.out
+
+
+def test_summary_shows_parts_with_qty(repl, capsys):
+    repl.onecmd('summary')
+    captured = capsys.readouterr()
+    assert 'P1' in captured.out
+    assert '2' in captured.out  # P1 QTY=2 in the assembly
