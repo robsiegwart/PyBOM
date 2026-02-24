@@ -266,8 +266,8 @@ class BOM(Set, NodeMixin):
         return self.PN
 
     @classmethod
-    def from_file(cls, filename: str | os.PathLike[str],
-                  PN: str | None = None) -> BOM:
+    def _from_file(cls, filename: str | os.PathLike[str],
+                   PN: str | None = None) -> BOM:
         '''
         Create an instance of :py:class:`BOM.BOM` based on an existing Excel
         file.
@@ -309,7 +309,7 @@ class BOM(Set, NodeMixin):
         assembly_files = [ x for x in files if fn_base(x).lower() != parts_file_name.lower() ]
         """Those files which are assumed to be assemblies"""
 
-        assemblies = { fn_base(file):BOM.from_file(os.path.join(directory, file)) for file in assembly_files }
+        assemblies = { fn_base(file):BOM._from_file(os.path.join(directory, file)) for file in assembly_files }
         """Instances of ``BOM`` for each assembly keyed with its PN"""
 
         parts_db = PartsDB.from_file(os.path.join(directory, f'{parts_file_name}.xlsx'))

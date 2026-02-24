@@ -58,8 +58,7 @@ number by default). Then, call class method :py:meth:`BOM.BOM.from_folder()`
 with the path to your folder to instantiate and build BOM objects.
 
 Alternatively, use :py:meth:`BOM.BOM.single_file()` to load all parts and
-assemblies from a single multi-sheet Excel file, or :py:meth:`BOM.BOM.from_file()`
-to create a bare BOM from a single Excel file without a parts database.
+assemblies from a single multi-sheet Excel file.
 
 Then, call methods or properties on the root BOM to obtain derived information:
 
