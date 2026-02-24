@@ -154,16 +154,15 @@ This returns a `BOM` object with properties on it you can retrieve:
   ```
   >>> print(bom.tree)
   SKA-100
-  ├── Part SK1001-01
-  ├── WH-01
-  │   ├── Part SK1004-01
-  │   └── Part SK1003-01
+  ├── Part SK1001-01        
   ├── TR-01
-  │   ├── Part SK1002-01
-  │   └── Assembly WH-01
-  ├── Part SK1005-01
-  ├── Part SK1006-01
-  └── Part SK1007-01
+  │   ├── Part SK1002-01    
+  │   └── WH-01
+  │       ├── Part SK1004-01
+  │       └── Part SK1003-01
+  ├── Part SK1005-01        
+  ├── Part SK1006-01        
+  └── Part SK1007-01  
   ```
 
   Calling this on child assemblies shows the tree from that reference point:
@@ -193,16 +192,15 @@ on the top-level `BOM` object.
 ```
 > pybom -d Example tree
 SKA-100
-├── Part SK1001-01
-├── WH-01
-│   ├── Part SK1004-01
-│   └── Part SK1003-01
+├── Part SK1001-01        
 ├── TR-01
-│   ├── Part SK1002-01
-│   └── Assembly WH-01
-├── Part SK1005-01
-├── Part SK1006-01
-└── Part SK1007-01
+│   ├── Part SK1002-01    
+│   └── WH-01
+│       ├── Part SK1004-01
+│       └── Part SK1003-01
+├── Part SK1005-01        
+├── Part SK1006-01        
+└── Part SK1007-01 
 ```
 
 Dependencies
