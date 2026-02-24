@@ -203,6 +203,22 @@ SKA-100
 └── Part SK1007-01 
 ```
 
+### REPL Mode
+
+In a terminal, browse to the folder containing your Excel BOM files and issue
+the command `pybom` with no arguments. This will cause it to enter REPL mode
+where you can interact with the BOM objects and call properties on them.
+
+Currently, the following commands are available:
+
+- parts
+- assemblies
+- summary
+- tree
+- quit
+- help
+
+
 Dependencies
 ------------
 
