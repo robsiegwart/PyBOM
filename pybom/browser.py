@@ -77,10 +77,10 @@ class AssemblyScreen(Screen):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.app.sub_title = self.bom.PN or 'Root'
+        self.app.sub_title = self.app._breadcrumb()
 
     def on_screen_resume(self) -> None:
-        self.app.sub_title = self.bom.PN or 'Root'
+        self.app.sub_title = self.app._breadcrumb()
 
     # ------------------------------------------------------------------
     # Event handlers
@@ -138,7 +138,7 @@ class PartScreen(Screen):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.app.sub_title = f'{self.pn} (Part)'
+        self.app.sub_title = self.app._breadcrumb()
 
     def _build_content(self) -> str:
         parts_db = self.root_bom.parts_db
@@ -169,6 +169,16 @@ class BomBrowserApp(App):
 
     def on_mount(self) -> None:
         self.push_screen(AssemblyScreen(self.root_bom, self.root_bom))
+
+    def _breadcrumb(self) -> str:
+        '''Build a " > "-separated path from the current screen stack.'''
+        segments = []
+        for screen in self.screen_stack:
+            if isinstance(screen, AssemblyScreen):
+                segments.append(screen.bom.PN or 'Root')
+            elif isinstance(screen, PartScreen):
+                segments.append(screen.pn)
+        return ' > '.join(segments)
 
 
 def run_browser(directory: str = '.') -> None:

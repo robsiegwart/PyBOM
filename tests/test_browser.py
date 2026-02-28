@@ -152,7 +152,7 @@ async def test_assembly_subtitle_updates_on_drill(nested_app):
     async with nested_app.run_test() as pilot:
         await pilot.press('down')
         await pilot.press('enter')
-        assert nested_app.sub_title == 'Sub'
+        assert nested_app.sub_title == 'Top > Sub'
 
 
 async def test_escape_from_sub_assembly_returns_to_root(nested_app):
