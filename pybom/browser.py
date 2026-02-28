@@ -53,6 +53,9 @@ class AssemblyScreen(Screen):
         self.bom = bom
         self.root_bom = root_bom
         self._items = [_resolve(c) for c in bom.children]
+        self._qtys = [bom.QTY(item.PN) for item in self._items]
+        _max_qty = max(self._qtys, default=1)
+        self._qty_col_width = len(f'({_max_qty})   ') if _max_qty > 1 else 0
 
     # ------------------------------------------------------------------
     # Compose / lifecycle
@@ -63,7 +66,7 @@ class AssemblyScreen(Screen):
         if self._items:
             yield ListView(
                 *[
-                    ListItem(Label(self._label(item)), id=f'item_{i}')
+                    ListItem(Label(self._label(item, self._qtys[i])), id=f'item_{i}')
                     for i, item in enumerate(self._items)
                 ]
             )
@@ -101,16 +104,20 @@ class AssemblyScreen(Screen):
     # Helpers
     # ------------------------------------------------------------------
 
-    def _label(self, item) -> str:
+    def _label(self, item, qty: int) -> str:
         pn = getattr(item, 'PN', '?')
         is_assembly = getattr(item, 'item_type', None) == 'assembly'
         prefix = '[A]' if is_assembly else '[P]'
         name = _get_name(item)
+        if self._qty_col_width > 0:
+            qty_str = f'({qty})   '.ljust(self._qty_col_width) if qty > 1 else ' ' * self._qty_col_width
+        else:
+            qty_str = ''
         pn_safe = markup_escape(str(pn)).ljust(20)
         name_safe = markup_escape(name)
         if is_assembly:
-            return f'{prefix} [bold cyan]{pn_safe}[/bold cyan]{name_safe}'
-        return f'{prefix} {pn_safe}{name_safe}'
+            return f'{prefix} {qty_str}[bold cyan]{pn_safe}[/bold cyan]{name_safe}'
+        return f'{prefix} {qty_str}{pn_safe}{name_safe}'
 
 
 class PartScreen(Screen):

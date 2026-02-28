@@ -47,6 +47,24 @@ async def test_subtitle_shows_bom_pn(app):
         assert app.sub_title == 'Assembly'
 
 
+async def test_qty_shown_for_items_with_qty_gt_1(app):
+    # bom_folder: P1 has QTY=2 in the assembly
+    async with app.run_test() as pilot:
+        from textual.widgets import Label
+        labels = [lbl.content for lbl in app.screen.query(Label)]
+        assert any('(2)' in lbl and 'P1' in lbl for lbl in labels)
+
+
+async def test_qty_1_not_shown(app):
+    # bom_folder: P2 has QTY=1 — "(1)" must not appear in its label
+    async with app.run_test() as pilot:
+        from textual.widgets import Label
+        labels = [lbl.content for lbl in app.screen.query(Label)]
+        p2_labels = [lbl for lbl in labels if 'P2' in lbl]
+        assert p2_labels
+        assert not any('(1)' in lbl for lbl in p2_labels)
+
+
 # ---------------------------------------------------------------------------
 # Part detail view
 # ---------------------------------------------------------------------------
