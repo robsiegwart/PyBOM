@@ -43,14 +43,27 @@ def main():
         help='The name of the folder containing Excel BOM files.',
         metavar='FOLDER'
     )
+    group.add_argument(
+        '-b', '--browse',
+        nargs='?',
+        const='.',
+        metavar='FOLDER',
+        help='Open the interactive TUI browser for a folder (default: cwd).',
+    )
 
     parser.add_argument(
         'action',
+        nargs='?',
         help='What to do with the resulting BOM.',
         default='tree'
     )
 
     ns = parser.parse_args()
+
+    if ns.browse is not None:
+        from .browser import run_browser
+        run_browser(directory=ns.browse)
+        return
 
     if ns.file:
         bom = BOM.single_file(ns.file)

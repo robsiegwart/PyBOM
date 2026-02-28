@@ -22,13 +22,22 @@ dependencies = [
     "pandas>=2.0",
     "anytree>=2.12",
     "openpyxl>=3.1",
+    "textual>=0.50",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [project.scripts]
 pybom = "pybom.__main__:main"
 
 [tool.setuptools]
 packages = ["pybom"]
+
+[dependency-groups]
+dev = [
+    "pytest-asyncio>=0.24.0",
+]

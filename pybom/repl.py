@@ -80,6 +80,11 @@ class BomRepl(cmd.Cmd):
         df = df.dropna(axis=1, how='all')
         print(df.to_string(index=False))
 
+    def do_browse(self, arg: str) -> None:
+        '''Open the interactive TUI browser for this BOM.'''
+        from .browser import BomBrowserApp
+        BomBrowserApp(self.bom).run()
+
     def do_quit(self, arg: str) -> bool:
         '''Exit the REPL.'''
         return True
