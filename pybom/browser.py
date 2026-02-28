@@ -13,6 +13,7 @@ import sys
 from typing import TYPE_CHECKING
 
 import pandas as pd
+from rich.markup import escape as markup_escape
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
@@ -107,9 +108,14 @@ class AssemblyScreen(Screen):
 
     def _label(self, item) -> str:
         pn = getattr(item, 'PN', '?')
-        prefix = '[A]' if getattr(item, 'item_type', None) == 'assembly' else '[P]'
+        is_assembly = getattr(item, 'item_type', None) == 'assembly'
+        prefix = '[A]' if is_assembly else '[P]'
         name = _lookup_name(pn, self.root_bom)
-        return f'{prefix} {pn:<20}{name}'
+        pn_safe = markup_escape(str(pn)).ljust(20)
+        name_safe = markup_escape(str(name))
+        if is_assembly:
+            return f'{prefix} [bold cyan]{pn_safe}[/bold cyan]{name_safe}'
+        return f'{prefix} {pn_safe}{name_safe}'
 
 
 class PartScreen(Screen):
