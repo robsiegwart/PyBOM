@@ -140,6 +140,7 @@ class BOM(Set, NodeMixin):
         self.children = items or []
         self.item_type = item_type.lower() if item_type else None
         self.parts_db = parts_db
+        self.Name: str | None = None
 
         if self.parts_db and self.df:
             self.init_parts()
@@ -277,8 +278,15 @@ class BOM(Set, NodeMixin):
                                 extension removed.
         :rtype:                 BOM
         '''
-        data = pd.read_excel(filename)
-        return cls(df=data, PN=PN or fn_base(os.path.basename(filename)))
+        _GENERIC_SHEET_NAMES = frozenset({'Sheet1', 'Sheet', 'Sheet 1'})
+        xf = pd.ExcelFile(filename)
+        sheet_name = xf.sheet_names[0]
+        data = xf.parse(sheet_name)
+        bom_pn = PN or fn_base(os.path.basename(filename))
+        bom = cls(df=data, PN=bom_pn)
+        if sheet_name not in _GENERIC_SHEET_NAMES and sheet_name != bom_pn:
+            bom.Name = sheet_name
+        return bom
 
     @classmethod
     def from_folder(cls, directory: str | os.PathLike[str],

@@ -17,30 +17,6 @@ def app(bom_folder):
     return BomBrowserApp(bom)
 
 
-@pytest.fixture
-def nested_bom_folder(tmp_path):
-    '''Multi-file folder where the root assembly contains one part and one sub-assembly.'''
-    parts = pd.DataFrame([
-        {'PN': 'P1', 'Name': 'Bearing'},
-        {'PN': 'P2', 'Name': 'Board'},
-        {'PN': 'P3', 'Name': 'Bracket'},
-    ])
-    top = pd.DataFrame([
-        {'PN': 'P1', 'QTY': 1},
-        {'PN': 'Sub', 'QTY': 2},
-    ])
-    sub = pd.DataFrame([
-        {'PN': 'P2', 'QTY': 3},
-        {'PN': 'P3', 'QTY': 1},
-    ])
-    with pd.ExcelWriter(tmp_path / 'Parts list.xlsx', engine='openpyxl') as w:
-        parts.to_excel(w, index=False)
-    with pd.ExcelWriter(tmp_path / 'Top.xlsx', engine='openpyxl') as w:
-        top.to_excel(w, index=False)
-    with pd.ExcelWriter(tmp_path / 'Sub.xlsx', engine='openpyxl') as w:
-        sub.to_excel(w, index=False)
-    return tmp_path
-
 
 @pytest.fixture
 def nested_app(nested_bom_folder):
@@ -163,3 +139,11 @@ async def test_escape_from_sub_assembly_returns_to_root(nested_app):
         await pilot.pause()  # allow on_screen_resume to fire
         assert isinstance(nested_app.screen, AssemblyScreen)
         assert nested_app.sub_title == 'Top'
+
+
+async def test_assembly_name_shown_in_list(nested_app):
+    # The Sub assembly has sheet name 'Sub Assembly' — it should appear as its Name
+    async with nested_app.run_test() as pilot:
+        from textual.widgets import ListItem, Label
+        labels = [lbl.content for lbl in nested_app.screen.query(Label)]
+        assert any('Sub Assembly' in lbl for lbl in labels)

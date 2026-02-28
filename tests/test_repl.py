@@ -73,6 +73,14 @@ def test_assemblies_shows_root(repl, capsys):
     assert 'Assembly' in captured.out
 
 
+def test_assemblies_shows_name_from_sheet(nested_bom_folder, capsys):
+    bom = BOM.from_folder(str(nested_bom_folder))
+    r = BomRepl(bom=bom, directory=str(nested_bom_folder))
+    r.onecmd('assemblies')
+    captured = capsys.readouterr()
+    assert 'Sub Assembly' in captured.out
+
+
 def test_summary_shows_parts_with_qty(repl, capsys):
     repl.onecmd('summary')
     captured = capsys.readouterr()

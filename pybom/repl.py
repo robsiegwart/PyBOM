@@ -53,9 +53,7 @@ class BomRepl(cmd.Cmd):
         rows = []
         for asm in all_assemblies:
             pn = asm.PN or ''
-            item = self.bom.parts_db.get(pn) if self.bom.parts_db else None
-            name = getattr(item, 'Name', '') if item else ''
-            rows.append((pn, name or ''))
+            rows.append((pn, asm.Name or ''))
 
         if not rows:
             print('No assemblies found.')

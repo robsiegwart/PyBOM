@@ -169,3 +169,32 @@ def test_parts_db_fields(simple_df):
     fields = bom.parts_db.fields
     assert "PN" in fields
     assert "Name" in fields
+
+
+# ---------------------------------------------------------------------------
+# BOM.Name — assembly display name from Excel sheet name
+# ---------------------------------------------------------------------------
+
+
+def test_from_file_name_set_from_meaningful_sheet_name(tmp_path, simple_df):
+    fn = tmp_path / 'TR-01.xlsx'
+    with pd.ExcelWriter(fn, engine='openpyxl') as w:
+        simple_df['Assembly'].to_excel(w, sheet_name='Truck assembly', index=False)
+    bom = BOM._from_file(fn)
+    assert bom.Name == 'Truck assembly'
+
+
+def test_from_file_name_is_none_for_generic_sheet_name(tmp_path, simple_df):
+    fn = tmp_path / 'Assembly.xlsx'
+    with pd.ExcelWriter(fn, engine='openpyxl') as w:
+        simple_df['Assembly'].to_excel(w, index=False)  # defaults to 'Sheet1'
+    bom = BOM._from_file(fn)
+    assert bom.Name is None
+
+
+def test_from_file_name_is_none_when_sheet_matches_pn(tmp_path, simple_df):
+    fn = tmp_path / 'TR-01.xlsx'
+    with pd.ExcelWriter(fn, engine='openpyxl') as w:
+        simple_df['Assembly'].to_excel(w, sheet_name='TR-01', index=False)
+    bom = BOM._from_file(fn)
+    assert bom.Name is None

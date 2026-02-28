@@ -28,20 +28,15 @@ def _resolve(item):
     return item.target if hasattr(item, 'target') else item
 
 
-def _lookup_name(pn: str, root_bom: BOM) -> str:
-    '''Return the Name field from parts_db for *pn*, or "" if unavailable.'''
-    if root_bom.parts_db is None:
+def _get_name(item) -> str:
+    '''Return the Name for any BOM item (Item or BOM), handling missing/NaN.'''
+    raw = getattr(item, 'Name', None)
+    if raw is None:
         return ''
-    db_item = root_bom.parts_db.get(pn)
-    if db_item is None:
-        return ''
-    raw = getattr(db_item, 'Name', None)
     try:
-        if pd.isna(raw):
-            return ''
+        return '' if pd.isna(raw) else str(raw)
     except TypeError:
-        pass
-    return str(raw) if raw is not None else ''
+        return str(raw)
 
 
 class AssemblyScreen(Screen):
@@ -110,9 +105,9 @@ class AssemblyScreen(Screen):
         pn = getattr(item, 'PN', '?')
         is_assembly = getattr(item, 'item_type', None) == 'assembly'
         prefix = '[A]' if is_assembly else '[P]'
-        name = _lookup_name(pn, self.root_bom)
+        name = _get_name(item)
         pn_safe = markup_escape(str(pn)).ljust(20)
-        name_safe = markup_escape(str(name))
+        name_safe = markup_escape(name)
         if is_assembly:
             return f'{prefix} [bold cyan]{pn_safe}[/bold cyan]{name_safe}'
         return f'{prefix} {pn_safe}{name_safe}'

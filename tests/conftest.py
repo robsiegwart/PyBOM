@@ -60,3 +60,29 @@ def bom_folder(tmp_path, simple_df):
     with pd.ExcelWriter(tmp_path / "Assembly.xlsx", engine="openpyxl") as w:
         simple_df["Assembly"].to_excel(w, index=False)
     return tmp_path
+
+
+@pytest.fixture
+def nested_bom_folder(tmp_path):
+    '''Multi-file folder where the root assembly contains one part and one sub-assembly.'''
+    parts = pd.DataFrame([
+        {"PN": "P1", "Name": "Bearing"},
+        {"PN": "P2", "Name": "Board"},
+        {"PN": "P3", "Name": "Bracket"},
+    ])
+    top = pd.DataFrame([
+        {"PN": "P1", "QTY": 1},
+        {"PN": "Sub", "QTY": 2},
+    ])
+    sub = pd.DataFrame([
+        {"PN": "P2", "QTY": 3},
+        {"PN": "P3", "QTY": 1},
+    ])
+    with pd.ExcelWriter(tmp_path / "Parts list.xlsx", engine="openpyxl") as w:
+        parts.to_excel(w, index=False)
+    with pd.ExcelWriter(tmp_path / "Top.xlsx", engine="openpyxl") as w:
+        top.to_excel(w, index=False)
+    with pd.ExcelWriter(tmp_path / "Sub.xlsx", engine="openpyxl") as w:
+        # Sheet name differs from PN — should become Sub.Name
+        sub.to_excel(w, sheet_name="Sub Assembly", index=False)
+    return tmp_path
