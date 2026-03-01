@@ -20,13 +20,14 @@ The functionality can be accessed in three ways:
 ## Motivation
 
 The main problem solved is to combine identical parts from various
-sub-assemblies and locations in your product BOM. Additionally, it is to be used
-with Excel since Excel is common, easy, and does not require a separate program
-or server to run. Flattening tells you the total QTY of a part when it may be
-used in many sub-assemblies and levels in your product structure. This is
-necessary to calculate the total QTY of a part and therefore determine the
-mininum packages of the product to buy, since many parts come in packs greater
-than QTY 1.
+sub-assemblies and locations in your product BOM. Additionally, it is designed
+to be used with Excel since Excel is common and does not require a separate
+program or server.
+
+Flattening tells you the total QTY of a part when it may be used in many
+sub-assemblies and levels in your product structure. This is necessary to
+calculate the total QTY of a part and therefore determine the mininum packages
+of the product to buy, since many parts come in packs greater than QTY 1.
 
 ## Structure
 
@@ -45,21 +46,21 @@ by a separate .xlsx file. Thus you might have:
        TR-01.xlsx          <-- subassembly
        WH-01.xlsx          <-- subassembly
 
-Root and sub-assemblies are inferred from item number relationships and do not
-have to be explicitly identified.
+Root and sub-assemblies are inferred from item number relationships and are not
+required to be explicitly identified.
 
 *Parts list.xlsx* serves as the single point of reference for part information.
 For example, it may have the following:
 
-| PN        | Name        | Description                    | Supplier               | Supplier PN   | Pkg QTY   | Pkg Price  | Item  |
-| --------- | ----------- | ------------------------------ | ---------------------- | ------------- | --------- | ---------- | ----- |
-| SK1001-01 | Deck        | Pavement Pro 9" Maple Deck     | Grindstone Supply Co.  | BRX-02        | 1         | 67.95      | part  |
-| SK1002-01 | Truck       | HollowKing Standard Trucks     | Grindstone Supply Co.  | TR1-A         | 1         | 28.95      | part  |
-| SK1003-01 | Bearing     | ABEC-7 Steel Bearings          | BoltRun Hardware       | 74295-942     | 1         | 9.95       | part  |
-| SK1004-01 | Wheel       | SlickCore 54mm Cruiser Wheels  | Grindstone Supply Co.  | WHL-PRX       | 4         | 44.95      | part  |
-| SK1005-01 | Screw       | 10-32, 1", Phillips            | BoltRun Hardware       | 92220A        | 25        | 12.49      | part  |
-| SK1006-01 | Nut         | 10-32                          | BoltRun Hardware       | 95479A        | 25        | 9.89       | part  |
-| SK1007-01 | Grip Tape   | SuperStick 9"                  | BoltRun Hardware       | GTSS99        | 1         | 8.95       | part  |
+| PN        | Name        | Description                    | Supplier               | Supplier PN   | Pkg QTY   | Pkg Price  |
+| --------- | ----------- | ------------------------------ | ---------------------- | ------------- | --------- | ---------- |
+| SK1001-01 | Deck        | Pavement Pro 9" Maple Deck     | Grindstone Supply Co.  | BRX-02        | 1         | 67.95      |
+| SK1002-01 | Truck       | HollowKing Standard Trucks     | Grindstone Supply Co.  | TR1-A         | 1         | 28.95      |
+| SK1003-01 | Bearing     | ABEC-7 Steel Bearings          | BoltRun Hardware       | 74295-942     | 1         | 9.95       |
+| SK1004-01 | Wheel       | SlickCore 54mm Cruiser Wheels  | Grindstone Supply Co.  | WHL-PRX       | 4         | 44.95      |
+| SK1005-01 | Screw       | 10-32, 1", Phillips            | BoltRun Hardware       | 92220A        | 25        | 12.49      |
+| SK1006-01 | Nut         | 10-32                          | BoltRun Hardware       | 95479A        | 25        | 9.89       |
+| SK1007-01 | Grip Tape   | SuperStick 9"                  | BoltRun Hardware       | GTSS99        | 1         | 8.95       |
 
 For each assembly, all that is required is the part identification number and
 quantity which correspond to the following fields:
@@ -160,7 +161,7 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   ```
   >>> print(bom.assemblies)
-  [WH-01, TR-01]
+  [TR-01]
   ```
 
 `BOM.aggregate`
@@ -169,21 +170,21 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   ```
   >>> print(bom.aggregate)
-  {'SK1001-01': 1, 'SK1005-01': 8, 'SK1006-01': 8, 'SK1007-01': 1, 'SK1004-01': 8, 'SK1003-01': 16, 'SK1002-01': 2}
+  {'SK1001-01': 1, 'SK1005-01': 8, 'SK1006-01': 8, 'SK1007-01': 1, 'SK1002-01': 2, 'SK1004-01': 4, 'SK1003-01': 8}
   ```
 
 `BOM.summary`
   : Get a summary in the form of a DataFrame containing the master parts
   list with each item's aggregated quantity and the required packages
-  to buy if the `Pkg QTY` field is not 1.
+  to buy (`Purchase QTY`) if the `Pkg QTY` field is not 1.
 
   ```
   >>> print(bom.summary)
           PN       Name                    Description  ... Total QTY Purchase QTY  Subtotal
 0  SK1001-01       Deck     Pavement Pro 9" Maple Deck  ...         1            1     67.95
 1  SK1002-01      Truck     HollowKing Standard Trucks  ...         2            2     57.90
-2  SK1003-01    Bearing          ABEC-7 Steel Bearings  ...        16           16     55.84
-3  SK1004-01      Wheel  SlickCore 54mm Cruiser Wheels  ...         8            1     44.95
+2  SK1003-01    Bearing          ABEC-7 Steel Bearings  ...         8            8     27.92
+3  SK1004-01      Wheel  SlickCore 54mm Cruiser Wheels  ...         4            1     44.95
 4  SK1005-01      Screw            10-32, 1”, Phillips  ...         8            1     12.49
 5  SK1006-01        Nut                          10-32  ...         8            1      9.89
 6  SK1007-01  Grip tape                  SuperStick 9”  ...         1            1      8.95
@@ -208,23 +209,26 @@ This returns a `BOM` object with properties on it you can retrieve:
 
   Calling this on child assemblies shows the tree from that reference point:
   ```
-  >>> sa = bom.assemblies[0]
-  >>> sa
-  WH-01
-  >>> print(sa.tree)
-  WH-01
-  ├── Part SK1004-01
-  ├── Part SK1003-01
+  >>> bom.assemblies
+  [TR-01]
+  >>> print(bom.assemblies[0].tree)
+  TR-01
+  ├── Part SK1002-01
+  └── WH-01
+    ├── Part SK1004-01
+    └── Part SK1003-01
   ```
 
 ### Command Line Usage
 
-Functionality is extended to the command line via the command `pybom`, where the
-flag `-f` or `-d` is used to specify the name of a file for single-file mode
-or a folder for multi-file mode.
+Functionality is extended to the command line where the flags `-f` and `-d` are
+used to specify the name of a file for single-file mode or a folder for
+multi-file mode, respectively.
 
 `action` is what to do with the imported data, which just maps to a property
 on the top-level `BOM` object.
+
+This method is not persistent and is meant for quick one-off retrieval of information.
 
 ```
 > pybom [-h] (-f FILE | -d FOLDER) action
@@ -244,24 +248,10 @@ SKA-100
 └── Part SK1007-01 
 ```
 
-### REPL Mode
-
-In a terminal, browse to the folder containing your Excel BOM files and issue
-the command `pybom` with no arguments. This will cause it to enter REPL mode
-where you can interact with the BOM objects and call properties on them.
-
-Currently, the following commands are available:
-
-- parts
-- assemblies
-- summary
-- tree
-- quit
-- help
-
-
 Dependencies
 ------------
 
 - *pandas*
 - *anytree*
+- *openpyxl*
+- *textual*
